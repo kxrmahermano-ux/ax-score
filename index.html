@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Kxrma</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg-color: #000;
+            --card-color: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-color: #f0f0f5;
+            --accent-color: #45b4ff;
+            --glow-color: #fff;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: none;
+            flex-direction: column;
+            perspective: 1000px;
+        }
+
+        .cursor {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.08s ease, background 0.3s ease;
+            z-index: 1000;
+        }
+        .click {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(10, 8, 8, 0.4);
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none;
+            animation: clickAnim 0.5s forwards;
+            z-index: 9999;
+        }
+        @keyframes clickAnim {
+            0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        .pop-text {
+            position: absolute;
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            pointer-events: none;
+            white-space: nowrap;
+            animation: popUp 1s forwards;
+            z-index: 9999;
+        }
+        @keyframes popUp {
+            0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -150%) scale(1); opacity: 0; }
+        }
+
+        #intro {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            transition: opacity 1s ease-in-out;
+        }
+        #intro-text {
+            font-size: 22px;
+            color: var(--text-color);
+            cursor: pointer;
+            text-align: center;
+            background: transparent;
+            padding: 15px 30px;
+            border-radius: 12px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            backdrop-filter: blur(6px);
+            border: none;
+            text-shadow: 0 0 5px var(--accent-color);
+        }
+        #intro-text:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        #main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 0.2s ease-out, opacity 1.5s ease;
+            padding: 40px;
+            border-radius: 20px;
+            background: var(--card-color);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(6px);
+        }
+        #main.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .profile-pic {
+            width: 130px; height: 130px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            animation: glowPulse 3s infinite ease-in-out;
+            box-shadow: 0 0 15px rgb(180, 176, 176);
+            transition: border-color 0.3s;
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 15px var(--accent-color), 0 0 25px var(--accent-color); }
+            50% { box-shadow: 0 0 25px var(--glow-color), 0 0 50px var(--glow-color); }
+        }
+
+        .username {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #fff, #555, #fff);
+            background-size: 600% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 6s ease-in-out infinite;
+            position: relative;
+        }
+        @keyframes gradientMove {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .username::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--accent-color);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        @keyframes glitch-anim {
+            0% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            2% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            4% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            6% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            8% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            10% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            12% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            14% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            16% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            18% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            20% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            22% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            24% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            26% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            28% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            30% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            32% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            34% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            36% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            38% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            40% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            42% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            44% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            46% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            48% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            50% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            52% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            54% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            56% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            58% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            60% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            62% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            64% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            66% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            68% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            70% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            72% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            74% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            76% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            78% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            80% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            82% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            84% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            86% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            88% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            90% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            92% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            94% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            96% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            98% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+            100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%); }
+        }
+
+        .status {
+            font-size: 14px;
+            opacity: 0.85;
+            min-height: 20px;
+            letter-spacing: 1px;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .info-row .views {
+            font-size: 14px;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .socials a {
+            font-size: 32px;
+            color: var(--text-color);
+            transition: color 0.3s;
+        }
+        .discord a:hover {
+            color: #fff;
+        }
+
+        .music-widget {
+            width: 280px;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+        .music-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .music-cover {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+        .music-info {
+            flex: 1;
+            text-align: left;
+        }
+        .music-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .music-artist {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+        .play-btn {
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.3s;
+        }
+        .play-btn:hover {
+            color: var(--accent-color);
+        }
+        .progress-bar {
+            margin-top: 10px;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            width: 0;
+            background: var(--accent-color);
+            transition: width 0.1s linear;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+        .music-widget.playing {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+        @keyframes pulseGlow {
+            0%,100% { box-shadow: 0 0 10px rgba(23, 0, 229, 0.3); }
+            50% { box-shadow: 0 0 25px var(--accent-color); }
+        }
+
+        #particle-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: particle-anim 10s infinite linear;
+            opacity: 0;
+        }
+        @keyframes particle-anim {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        .bg-gradient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255, 0, 0, 0.1), transparent 70%);
+            animation: pulse-gradient 10s ease-in-out infinite;
+            z-index: -1;
+        }
+        @keyframes pulse-gradient {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .bg-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .line {
+            position: absolute;
+            height: 100%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: flow 10s linear infinite;
+        }
+        @keyframes flow {
+            from { transform: translateY(-100%) scaleY(0); }
+            to { transform: translateY(100%) scaleY(1); }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="particle-bg"></div>
+    <div class="bg-gradient"></div>
+    <div class="bg-lines"></div>
+
+    <div id="intro">
+        <div id="intro-text">CLICK TO ENTER DAWG...</div>
+    </div>
+
+    <div id="main">
+        <img src="https://file.garden/aSqMUhZqpx5ZY3gd/3ed170486d0d4bdc914078c575755de3.webp" alt="Profile" class="profile-pic">
+        <div class="username" data-text="Kxrma">Kxrma</div>
+        <div class="info-row">
+            <div class="status"></div>
+            <div class="views">
+                <i class="fa-solid fa-eye"></i> <span id="viewCount"></span>
+            </div>
+        </div>
+        <div class="socials">
+            <a href="https://www.instagram.com/kxrmaabd/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+             <a href="https://discord.gg/DXZk4WQUG8" target="_blank"><i class="fa-brands fa-discord"></i></a>
+               <a href="https://www.youtube.com/@KxrmaSanchez" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://www.tiktok.com/@noa_kxrma" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+
+
+        </div>
+        <div class="music-widget">
+            <div class="music-top">
+                <img src="https://file.garden/aSqMUhZqpx5ZY3gd/image%20(2).png" class="music-cover" alt="Cover">
+                <div class="music-info">
+                    <div class="music-title"> Tusong Bata</div>
+                    <div class="music-artist">Cuervo Messiah</div>
+                </div>
+                <div class="play-btn">▶</div>
+            </div>
+            <div class="progress-bar"><div class="progress"></div></div>
+            <div class="controls">
+                <div class="current-time">0:00</div>
+                <div class="duration">0:00</div>
+            </div>
+            <audio id="audio" src="https://file.garden/aSqMUhZqpx5ZY3gd/Tusongbata%20(Freestyle)%20-%20Cuervo%20Messiah%20%5BVVndnGnXHl4%5D.mp3" preload="metadata" loop></audio>
+        </div>
+    </div>
+
+    <div class="cursor" id="cursor"></div>
+
+    <script>
+        const body = document.body;
+        const main = document.getElementById('main');
+        const intro = document.getElementById('intro');
+        const audio = document.getElementById('audio');
+        const playBtn = document.querySelector('.play-btn');
+        const progressBar = document.querySelector('.progress');
+        const currentTime = document.querySelector('.current-time');
+        const durationTime = document.querySelector('.duration');
+        const musicWidget = document.querySelector('.music-widget');
+        const statusEl = document.querySelector('.status');
+        const cursor = document.getElementById('cursor');
+
+        const statuses = ['Kxrma. | Mabait na bata'];
+        let charIndex = 0;
+        let deleting = false;
+        let sIndex = 0;
+        
+        document.addEventListener('contextmenu', function (event) {
+    event.preventDefault();
+    alert('BOBO KA?');
+  });
+
+
+        document.addEventListener('keydown', function (event) {
+    if (event.ctrlKey && event.key.toLowerCase() === 'u') {
+      event.preventDefault();
+      alert('GAWA KA NG SARILI MONG WEBSITE!');
+    }
+  });
+
+        function typeEffect() {
+            const txt = statuses[sIndex];
+            statusEl.textContent = deleting
+                ? txt.slice(0, --charIndex)
+                : txt.slice(0, ++charIndex);
+            if (!deleting && charIndex === txt.length) {
+                deleting = true;
+                setTimeout(typeEffect, 1500);
+            } else if (deleting && charIndex === 0) {
+                deleting = false;
+                sIndex = (sIndex + 1) % statuses.length;
+                setTimeout(typeEffect, 500);
+            } else {
+                setTimeout(typeEffect, deleting ? 50 : 100);
+            }
+        }
+
+        intro.addEventListener('click', () => {
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                main.classList.add('show');
+                typeEffect();
+            }, 1000);
+
+            audio.volume = 0;
+            audio.play().then(() => {
+                playBtn.textContent = '⏸';
+                musicWidget.classList.add('playing');
+                let vol = 0;
+                const fade = setInterval(() => {
+                    if (vol < 1) audio.volume = vol += 0.05;
+                    else clearInterval(fade);
+                }, 100);
+            }).catch(e => console.error("Audio playback failed:", e));
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationTime.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                progressBar.style.width = (audio.currentTime / audio.duration * 100) + '%';
+                currentTime.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = '▶';
+                musicWidget.classList.add('playing');
+            } else {
+                audio.pause();
+                playBtn.textContent = '⏸';
+                musicWidget.classList.remove('playing');
+            }
+        });
+
+        function formatTime(sec) {
+            if (!isFinite(sec)) return '0:00';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        document.addEventListener('mousemove', e => {
+            cursor.style.left = e.pageX + 'px';
+            cursor.style.top = e.pageY + 'px';
+
+            const { clientX, clientY } = e;
+            const { innerWidth, innerHeight } = window;
+            const rotX = (clientY / innerHeight - 0.5) * -35;
+            const rotY = (clientX / innerWidth - 0.5) * 35;
+            main.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        });
+
+        document.addEventListener('click', e => {
+            const clickGlow = document.createElement('div');
+            clickGlow.className = 'click';
+            clickGlow.style.left = e.pageX + 'px';
+            clickGlow.style.top = e.pageY + 'px';
+            body.appendChild(clickGlow);
+            setTimeout(() => clickGlow.remove(), 500);
+
+            if (e.target.closest('#main') === null && e.target.id !== 'intro-text') {
+                const popText = document.createElement('div');
+                popText.className = 'pop-text';
+                popText.textContent = 'Kxrma';
+                popText.style.left = e.pageX + 'px';
+                popText.style.top = e.pageY + 'px';
+                body.appendChild(popText);
+                setTimeout(() => popText.remove(), 1000);
+            }
+        });
+
+        function createParticles() {
+            const particleContainer = document.getElementById('particle-bg');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.width = `${Math.random() * 3 + 1}px`;
+                particle.style.height = particle.style.width;
+                particle.style.animationDuration = `${Math.random() * 15 + 10}s`;
+                particle.style.animationDelay = `${Math.random() * -10}s`;
+                particleContainer.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        function getIP(json) {
+            document.getElementById('viewCount').textContent = json.ip.replace(/\./g, '');
+        }
+        
+            
+    </script>
+    <script src=""></script> .
+</body>
+</html>
